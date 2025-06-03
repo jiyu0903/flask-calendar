@@ -2,7 +2,7 @@
 
 <html>
 <head>
-<title>Sukeesh</title>
+<title>Calendar App</title>
 <meta charset='utf-8' />
 <link href="{{ url_for('static', filename='fullcalendar.min.css') }}" rel='stylesheet' />
 <link href="{{ url_for('static', filename='font-awesome-4.7.0/css/font-awesome.min.css') }}" rel='stylesheet' />
@@ -13,41 +13,77 @@
 <link href="https://fonts.googleapis.com/css?family=PT+Serif" rel="stylesheet">
 
 <script>
-
-	$(document).ready(function() {
-
+	$(document).ready(function () {
 		$('#calendar').fullCalendar({
 			header: {
 				left: 'prev,next today',
 				center: 'title',
 				right: 'month'
 			},
-			defaultDate: '2017-01-12',
+			defaultDate: moment().format('YYYY-MM-DD'),
 			editable: true,
 			eventLimit: true,
 			events: {
-				url: 'data',
-				error: function() {
+				url: '/data',
+				error: function () {
 					$('#script-warning').show();
 				}
 			},
-			loading: function(bool) {
+			loading: function (bool) {
 				$('#loading').toggle(bool);
+			},
+			selectable: true,
+			selectHelper: true,
+			select: function (start, end) {
+				var title = prompt('Enter Event Title:');
+				if (title) {
+					var description = prompt('Enter Event Description (optional):', '');
+					let eventData = {
+						title: title,
+						start: start.format(),
+						end: end.format(),
+						description: description || ''
+					};
+					$.ajax({
+						url: '/api/events',
+						method: 'POST',
+						contentType: 'application/json',
+						data: JSON.stringify(eventData),
+						success: function () {
+							$('#calendar').fullCalendar('refetchEvents');
+						}
+					});
+				}
+				$('#calendar').fullCalendar('unselect');
+			},
+			eventClick: function (event) {
+				var msg = `Title: ${event.title}\nDescription: ${event.description || 'No description'}\n\nDelete this event?`;
+				if (confirm(msg)) {
+					$.ajax({
+						url: '/api/events/' + event.id,
+						type: 'DELETE',
+						success: function () {
+							$('#calendar').fullCalendar('refetchEvents');
+						}
+					});
+				}
+			},
+			eventRender: function(event, element) {
+				if (event.description) {
+					element.find('.fc-title').append('<br/><small>' + event.description + '</small>');
+				}
 			}
 		});
-
 	});
-
 </script>
 
 <style>
-
 	body {
 		margin: 0;
 		padding: 0;
 		font-size: 14px;
+		font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
 	}
-
 	#script-warning {
 		display: none;
 		background: #eee;
@@ -59,20 +95,23 @@
 		font-size: 12px;
 		color: red;
 	}
-
 	#loading {
 		display: none;
 		position: absolute;
 		top: 10px;
 		right: 10px;
 	}
-
 	#calendar {
 		max-width: 700px;
 		margin: 10px auto;
 		padding: 0 10px;
 	}
-
+	.fc-event small {
+		font-size: 0.7em;
+		color: #555;
+		display: block;
+		white-space: normal; /* wrap text */
+	}
 </style>
 
 <link href="{{ url_for('static', filename='sukeesh.css') }}" rel='stylesheet' />
@@ -140,7 +179,9 @@
 				<script src="https://query.yahooapis.com/v1/public/yql?q=select wind from weather.forecast where woeid in (select woeid from geo.places(1) where text='Bangalore')&format=json&callback=callbackFunction"></script>
 			</div>
 
-			<div id='AddEvent' align="center"> <button type="button" onclick="func()"> Add Event </button> </div>
+			<div id='AddEvent' align="center">
+	<small>(Click and drag on calendar to add events)</small>
+</div>
 			<script type="text/javascript">
 				function func(){
 					var r1 = prompt("Title : ", " Enter Title ");

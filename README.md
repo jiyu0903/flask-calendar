@@ -45,24 +45,6 @@ This project is a web-based calendar application built with Flask (Python) on th
 - **Real-Time Calendar Updates**  
   After any event operation (create/delete), the calendar reloads events to reflect changes instantly.
 
-## Benefits of Using REST API and CRUD Architecture
 
-- **Separation of Concerns**  
-  The backend focuses on data management and business logic, while the frontend handles user interaction and display.
-
-- **Scalability and Extensibility**  
-  REST API endpoints can be consumed by other clients (mobile apps, other web apps) beyond this frontend.
-
-- **Stateless Communication**  
-  Each REST request contains all necessary information, allowing the server to remain stateless and scalable.
-
-- **Improved User Experience**  
-  AJAX-based CRUD operations enable instant, asynchronous updates without page reloads, resulting in a smooth and responsive UI.
-
-- **Data Integrity and Validation**  
-  CRUD endpoints allow structured data validation and consistent updates to the database.
-
-- **Maintainability**  
-  Clear API routes and standardized operations make the code easier to maintain and extend.
 
 

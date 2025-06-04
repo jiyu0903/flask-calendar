@@ -44,6 +44,13 @@ def return_data():
 @app.route('/api/events', methods=['POST'])
 def create_event():
     data = request.get_json()
+    
+    # Check for required fields
+    required_fields = ['title', 'start', 'end']
+    missing = [field for field in required_fields if field not in data]
+    if missing:
+        return jsonify({"error": f"Missing fields: {', '.join(missing)}"}), 400
+    
     new_event = Event(
         title=data['title'],
         start=data['start'],
@@ -53,6 +60,7 @@ def create_event():
     db.session.add(new_event)
     db.session.commit()
     return jsonify(new_event.to_dict()), 201
+
 
 @app.route('/api/events/<int:event_id>', methods=['GET'])
 def get_event(event_id):

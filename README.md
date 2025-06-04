@@ -6,6 +6,8 @@ This project is a web-based calendar application built with Flask (Python) on th
 
 ## Features and Changes Made
 
+Implemented a 100% Coverage test
+
 ### Backend (Flask)
 
 - **Database Integration with SQLAlchemy**  

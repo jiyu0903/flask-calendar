@@ -24,11 +24,9 @@ class Event(db.Model):
             "description": self.description
         }
 
-# Create tables before the first request
-def create_tables_once():
-    if not hasattr(app, 'db_initialized'):
-        db.create_all()
-        app.db_initialized = True
+# Create tables (works in older Flask)
+with app.app_context():
+    db.create_all()
 
 @app.route('/')
 def calendar():
@@ -39,18 +37,17 @@ def return_data():
     events = Event.query.all()
     return jsonify([event.to_dict() for event in events])
 
-# === CRUD API Endpoints ===
-
 @app.route('/api/events', methods=['POST'])
 def create_event():
     data = request.get_json()
-    
-    # Check for required fields
+    if not data:
+        return jsonify({"error": "No JSON body provided"}), 400
+
     required_fields = ['title', 'start', 'end']
     missing = [field for field in required_fields if field not in data]
     if missing:
         return jsonify({"error": f"Missing fields: {', '.join(missing)}"}), 400
-    
+
     new_event = Event(
         title=data['title'],
         start=data['start'],
@@ -61,7 +58,6 @@ def create_event():
     db.session.commit()
     return jsonify(new_event.to_dict()), 201
 
-
 @app.route('/api/events/<int:event_id>', methods=['GET'])
 def get_event(event_id):
     event = Event.query.get_or_404(event_id)
@@ -71,6 +67,9 @@ def get_event(event_id):
 def update_event(event_id):
     event = Event.query.get_or_404(event_id)
     data = request.get_json()
+    if not data:
+        return jsonify({"error": "No JSON body provided"}), 400
+
     event.title = data.get('title', event.title)
     event.start = data.get('start', event.start)
     event.end = data.get('end', event.end)
@@ -86,5 +85,4 @@ def delete_event(event_id):
     return '', 204
 
 if __name__ == '__main__':
-    app.debug = True
-    app.run()
+    app.run(debug=True)
